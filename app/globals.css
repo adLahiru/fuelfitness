@@ -1,26 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Colors */
+  --color-background: #0A0F0D;
+  --color-background-secondary: #111A17;
+  --color-neon: #00FF88;
+  --color-neon-dim: #0D5C3F;
+  --color-neon-leaf: #1FAF6B;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A5B8AE;
+  --color-border: #1F2D28;
+  --color-status-success: #2ECC71;
+  --color-status-warning: #F1C40F;
+
+  /* Fonts */
+  --font-heading: 'Orbitron', sans-serif;
+  --font-body: 'Montserrat', sans-serif;
+
+  /* Shadows */
+  --shadow-neon: 0 0 10px rgba(0, 255, 136, 0.3), 0 0 20px rgba(0, 255, 136, 0.1);
+  --shadow-neon-strong: 0 0 15px rgba(0, 255, 136, 0.6), 0 0 30px rgba(0, 255, 136, 0.4);
+  --shadow-neon-inner: inset 0 0 10px rgba(0, 255, 136, 0.2);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base Styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--color-neon);
+  color: black;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: var(--color-background-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-neon-dim);
+}
+
+/* Utilities */
+.text-glow {
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.7), 0 0 20px rgba(0, 255, 136, 0.5);
+}
+.text-glow-sm {
+  text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
+}
+.glass-panel {
+  background-color: rgba(17, 26, 23, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
 }
