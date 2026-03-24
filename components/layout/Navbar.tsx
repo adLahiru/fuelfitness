@@ -16,6 +16,7 @@ const navLinks = [
 
 export function Navbar() {
   const [isAtTop, setIsAtTop] = useState(true);
+  const [showSeparator, setShowSeparator] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { totalItems } = useCart();
   const { isAuthenticated, user } = useAuth();
@@ -23,9 +24,36 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setIsAtTop(window.scrollY < 50);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Keep the separator visible while the user is inside the hero (first) section.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hero = document.querySelector('section[data-hero]') || document.querySelector('section');
+    if (!hero) return;
+
+    const getHeroBottom = () => {
+      const r = hero.getBoundingClientRect();
+      return r.bottom + window.scrollY - 4; // small threshold
+    };
+
+    let heroBottom = getHeroBottom();
+
+    const update = () => {
+      heroBottom = getHeroBottom();
+      setShowSeparator(window.scrollY < heroBottom);
+    };
+
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   useEffect(() => {
@@ -35,7 +63,7 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-sm transition-all duration-300 ${
-        isAtTop ? 'glow-bottom py-6' : 'py-4'
+        showSeparator ? 'glow-bottom py-6' : 'py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
