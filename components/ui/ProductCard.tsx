@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/types/store';
@@ -16,9 +16,38 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const [qty, setQty] = useState<number>(1);
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const id = (e as CustomEvent).detail as null | string | number;
+      setIsActive(id === product.id);
+    };
+
+    window.addEventListener('ff:product-select', handler as EventListener);
+    return () => window.removeEventListener('ff:product-select', handler as EventListener);
+  }, [product.id]);
 
   return (
-    <div className="group flex flex-col bg-background-secondary border border-border hover:border-neon/50 transition-all duration-300 overflow-hidden">
+    <div
+      className="group flex flex-col bg-background-secondary border border-border hover:border-neon/50 transition-colors duration-300 overflow-hidden"
+      tabIndex={0}
+      onClick={() => {
+        const next = isActive ? null : product.id;
+        window.dispatchEvent(new CustomEvent('ff:product-select', { detail: next }));
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const next = isActive ? null : product.id;
+          window.dispatchEvent(new CustomEvent('ff:product-select', { detail: next }));
+        }
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      aria-pressed={isActive}
+    >
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-background p-6 flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-t from-background-secondary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
@@ -26,7 +55,10 @@ export function ProductCard({ product }: ProductCardProps) {
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+            style={{ willChange: 'transform' }}
+            className={`w-full h-full object-contain transform transition-transform duration-500 ${
+              isHovered || isActive ? 'scale-110' : 'scale-100'
+            }`}
           />
         </Link>
 
@@ -76,7 +108,7 @@ export function ProductCard({ product }: ProductCardProps) {
               e.preventDefault();
               addToCart(product);
             }}
-            className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-text-secondary hover:text-neon hover:border-neon hover:shadow-neon transition-all duration-300 md:hidden group-hover:flex"
+            className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-text-secondary hover:text-neon hover:border-neon hover:shadow-neon transition-opacity duration-300 md:hidden opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
             aria-label="Add to cart"
           >
             <ShoppingCart className="w-4 h-4" />
@@ -86,3 +118,7 @@ export function ProductCard({ product }: ProductCardProps) {
     </div>
   );
 }
+
+// Global listener: ensure only one product card stays active at a time.
+// Each instance registers a listener in its own effect above.
+// We need to add a top-level effect to subscribe/unsubscribe per-instance.
