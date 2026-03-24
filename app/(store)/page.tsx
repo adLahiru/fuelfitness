@@ -59,7 +59,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+      <section data-hero className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=2000"
@@ -105,7 +105,7 @@ export default function HomePage() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-20 bg-background-secondary border-y border-border relative overflow-hidden">
+      <section data-nav-bg="var(--color-background-secondary)" className="py-20 bg-background-secondary border-y border-border relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, idx) => (
@@ -116,7 +116,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24 relative">
+      <section data-nav-bg="var(--color-background)" className="py-24 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <SectionHeading title="BEST" highlight="SELLERS" subtitle="Our most popular formulas, trusted by professionals and proven to deliver results." />
@@ -137,7 +137,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-background-secondary border-t border-border">
+      <section data-nav-bg="var(--color-background-secondary)" className="py-24 bg-background-secondary border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <SectionHeading title="ATHLETE" highlight="REVIEWS" centered className="mb-16" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

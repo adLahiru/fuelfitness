@@ -17,7 +17,9 @@ const navLinks = [
 export function Navbar() {
   const [isAtTop, setIsAtTop] = useState(true);
   const [showSeparator, setShowSeparator] = useState(true);
+  const [navBg, setNavBg] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [navTextColor, setNavTextColor] = useState<string | null>(null);
   const { totalItems } = useCart();
   const { isAuthenticated, user } = useAuth();
   const pathname = usePathname();
@@ -56,15 +58,121 @@ export function Navbar() {
     };
   }, []);
 
+  // When the hero separator is gone (user scrolled past hero), match navbar background
+  // to the section currently under the fixed header. Include the footer as well.
+  useEffect(() => {
+    if (showSeparator) {
+      setNavBg(null);
+      return;
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const headerEl = document.querySelector('header') as HTMLElement | null;
+    const headerH = () => headerEl?.offsetHeight ?? 64;
+
+    const collectTargets = (): HTMLElement[] => {
+      const secs = Array.from(document.querySelectorAll('section')) as HTMLElement[];
+      const footer = document.querySelector('footer') as HTMLElement | null;
+      if (footer) secs.push(footer);
+      return secs;
+    };
+
+    const getBgFor = (el: HTMLElement) => {
+      const data = el.getAttribute('data-nav-bg');
+      if (data) return data;
+      const style = window.getComputedStyle(el).backgroundColor;
+      if (!style || style === 'rgba(0, 0, 0, 0)' || style === 'transparent') {
+        return 'rgba(10,10,10,0.95)';
+      }
+      return style;
+    };
+
+    const parseRgb = (cssColor: string) => {
+      // supports rgb(), rgba(), and hex via temporary element
+      if (!cssColor) return null;
+      const ctx = document.createElement('div');
+      ctx.style.color = cssColor;
+      document.body.appendChild(ctx);
+      const computed = window.getComputedStyle(ctx).color;
+      document.body.removeChild(ctx);
+      const m = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/);
+      if (!m) return null;
+      return { r: +m[1], g: +m[2], b: +m[3], a: m[4] ? +m[4] : 1 };
+    };
+
+    const luminance = (r: number, g: number, b: number) => {
+      const toLin = (v: number) => {
+        v = v / 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
+    };
+
+    const update = () => {
+      const targets = collectTargets();
+      if (!targets.length) return;
+      const hh = headerH();
+      // prefer the element directly under the header
+      let found: HTMLElement | null = null;
+      for (const t of targets) {
+        // skip hero sections when matching
+        if (t instanceof HTMLElement && t.hasAttribute('data-hero')) continue;
+        const r = t.getBoundingClientRect();
+        if (r.top <= hh + 4 && r.bottom > hh + 4) {
+          found = t;
+          break;
+        }
+      }
+      if (!found) {
+        // fallback: pick the element with largest visible area
+        let maxVisible = 0;
+        for (const t of targets) {
+          if (t instanceof HTMLElement && t.hasAttribute('data-hero')) continue;
+          const r = t.getBoundingClientRect();
+          const visible = Math.max(0, Math.min(window.innerHeight, r.bottom) - Math.max(0, r.top));
+          if (visible > maxVisible) {
+            maxVisible = visible;
+            found = t;
+          }
+        }
+      }
+      if (found) {
+        const raw = getBgFor(found);
+        setNavBg(raw);
+        const rgb = parseRgb(raw);
+        if (rgb) {
+          const L = luminance(rgb.r, rgb.g, rgb.b);
+          // pick white text on dark backgrounds, black text on light backgrounds
+          setNavTextColor(L < 0.5 ? '#ffffff' : '#000000');
+        } else {
+          setNavTextColor('#ffffff');
+        }
+      }
+    };
+
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [showSeparator]);
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-sm transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         showSeparator ? 'glow-bottom py-6' : 'py-4'
       }`}
+      style={{
+        background: showSeparator ? 'rgba(10,10,10,0.95)' : (navBg ?? 'rgba(10,10,10,0.95)'),
+        color: navTextColor ?? (showSeparator ? '#ffffff' : undefined)
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
