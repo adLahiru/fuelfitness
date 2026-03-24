@@ -42,21 +42,41 @@ export function Navbar() {
       return r.bottom + window.scrollY - 4; // small threshold
     };
 
+    const footer = document.querySelector('footer');
+    const isCatalogue = pathname?.startsWith('/catalogue');
+
     let heroBottom = getHeroBottom();
 
     const update = () => {
       heroBottom = getHeroBottom();
-      setShowSeparator(window.scrollY < heroBottom);
+      // Ensure separator remains visible when near the top of the page
+      const nearTop = window.scrollY < 50;
+      let visible = nearTop || window.scrollY < heroBottom;
+
+      // On the catalogue page, hide the navbar separator when the footer is visible
+      if (isCatalogue && footer) {
+        const fr = footer.getBoundingClientRect();
+        const footerVisible = fr.top <= window.innerHeight - 20; // small buffer
+        if (footerVisible) visible = false;
+      }
+
+      setShowSeparator(visible);
     };
 
     update();
+    // also run a delayed update to catch dynamically-rendered sections
+    const t = window.setTimeout(update, 60);
+    // minor rAF to catch paint timing
+    const raf = requestAnimationFrame(update);
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
     return () => {
+      window.clearTimeout(t);
+      cancelAnimationFrame(raf);
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
     };
-  }, []);
+  }, [pathname]);
 
   // When the hero separator is gone (user scrolled past hero), match navbar background
   // to the section currently under the fixed header. Include the footer as well.
@@ -158,7 +178,7 @@ export function Navbar() {
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
     };
-  }, [showSeparator]);
+  }, [showSeparator, pathname]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
