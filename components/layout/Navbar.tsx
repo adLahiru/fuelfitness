@@ -15,15 +15,16 @@ const navLinks = [
 ];
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { totalItems } = useCart();
   const { isAuthenticated, user } = useAuth();
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => setIsAtTop(window.scrollY < 50);
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -33,19 +34,17 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-background/90 backdrop-blur-md border-b border-border py-4'
-          : 'bg-transparent py-6'
+      className={`fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-sm transition-all duration-300 ${
+        isAtTop ? 'glow-bottom py-6' : 'py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <Activity className="w-8 h-8 text-neon group-hover:animate-pulse" />
-            <span className="font-heading font-bold text-2xl tracking-wider text-white group-hover:text-glow transition-all">
-              FUEL<span className="text-neon">FITNESS</span>
+            <Activity className="w-8 h-8 text-[#00ff88] group-hover:animate-pulse" />
+            <span className="font-heading font-bold text-2xl tracking-wider text-white transition-all">
+              FUEL<span className="text-[#00ff88]">FITNESS</span>
             </span>
           </Link>
 
@@ -55,8 +54,10 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.path}
-                className={`text-sm font-medium uppercase tracking-wider transition-colors hover:text-neon ${
-                  pathname === link.path ? 'text-neon text-glow-sm' : 'text-text-secondary'
+                className={`text-sm font-medium uppercase tracking-wider transition-colors ${
+                  pathname === link.path
+                    ? 'text-[#00ff88]'
+                    : 'text-white/80 hover:text-[#00ff88]'
                 }`}
               >
                 {link.name}
@@ -68,7 +69,7 @@ export function Navbar() {
           <div className="flex items-center gap-4 md:gap-6">
             <Link
               href={isAuthenticated ? '/orders' : '/auth'}
-              className="text-text-secondary hover:text-neon transition-colors hidden sm:flex items-center gap-2"
+              className="text-white/80 hover:text-[#00ff88] transition-colors hidden sm:flex items-center gap-2"
             >
               <User className="w-5 h-5" />
               {isAuthenticated && user ? (
@@ -77,10 +78,14 @@ export function Navbar() {
                 <span className="text-sm">Login / Signup</span>
               )}
             </Link>
-            <Link href="/cart" className="relative text-text-secondary hover:text-neon transition-colors group">
+
+            <Link
+              href="/cart"
+              className="relative text-white/80 hover:text-[#00ff88] transition-colors group"
+            >
               <ShoppingCart className="w-5 h-5" />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-neon text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center group-hover:shadow-neon transition-shadow">
+                <span className="absolute -top-2 -right-2 bg-[#00ff88] text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
@@ -88,7 +93,7 @@ export function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="md:hidden text-text-secondary hover:text-neon"
+              className="md:hidden text-white/80 hover:text-[#00ff88]"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -99,13 +104,13 @@ export function Navbar() {
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border p-4 flex flex-col gap-4 shadow-xl">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-white/10 p-4 flex flex-col gap-4 shadow-xl">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.path}
-              className={`text-lg font-medium uppercase tracking-wider p-2 border-b border-border/50 ${
-                pathname === link.path ? 'text-neon' : 'text-text-secondary'
+              className={`text-lg font-medium uppercase tracking-wider p-2 border-b border-white/10 ${
+                pathname === link.path ? 'text-[#00ff88]' : 'text-white/80'
               }`}
             >
               {link.name}
@@ -113,7 +118,7 @@ export function Navbar() {
           ))}
           <Link
             href={isAuthenticated ? '/orders' : '/auth'}
-            className="text-lg font-medium uppercase tracking-wider p-2 text-text-secondary flex items-center gap-2"
+            className="text-lg font-medium uppercase tracking-wider p-2 text-white/80 flex items-center gap-2"
           >
             <User className="w-5 h-5" />
             {isAuthenticated ? 'My Account' : 'Login / Signup'}
